@@ -4544,6 +4544,7 @@ function Library:CreateWindow(WindowInfo)
         local TabContainer
         local TabLeft
         local TabRight
+		local TabFull
 
         local WarningBox
         local WarningTitle
@@ -4666,6 +4667,24 @@ function Library:CreateWindow(WindowInfo)
                 Library:UpdateDPI(TabRight, { Size = TabRight.Size })
             end
 
+			TabFull = New('ScrollingFrame', {
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                CanvasSize = UDim2.fromScale(0, 0),
+                ScrollBarThickness = 0,
+                Size = UDim2.fromScale(1, 1),
+                Parent = TabContainer,
+            })
+            New('UIListLayout', {
+                Padding = UDim.new(0, 6),
+                Parent = TabFull,
+            })
+            do
+                New('Frame', { BackgroundTransparency = 1, LayoutOrder = -1, Parent = TabFull })
+                New('Frame', { BackgroundTransparency = 1, LayoutOrder = 1, Parent = TabFull })
+                Library:UpdateDPI(TabFull, { Size = TabFull.Size })
+            end
+
             WarningBox = New('Frame', {
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = Color3.fromRGB(127, 0, 0),
@@ -4726,6 +4745,7 @@ function Library:CreateWindow(WindowInfo)
             Sides = {
                 TabLeft,
                 TabRight,
+				TabFull,
             },
         }
 
@@ -4814,12 +4834,15 @@ function Library:CreateWindow(WindowInfo)
                 or 0
             for _, Side in pairs(Tab.Sides) do
                 Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
+                
+                local IsFull = (Side == TabFull)
                 Side.Size = UDim2.new(
-                    0,
-                    math.floor(TabContainer.AbsoluteSize.X / 2) - 3,
+                    IsFull and 1 or 0,
+                    IsFull and 0 or (math.floor(TabContainer.AbsoluteSize.X / 2) - 3),
                     1,
                     -Offset
                 )
+                
                 Library:UpdateDPI(Side, {
                     Position = Side.Position,
                     Size = Side.Size,
@@ -4829,7 +4852,7 @@ function Library:CreateWindow(WindowInfo)
 
         function Tab:AddGroupbox(Info)
             local Background = Library:MakeOutline(
-                Info.Side == 1 and TabLeft or TabRight,
+                Info.Side == 1 and TabLeft or (Info.Side == 2 and TabRight or TabFull)
                 WindowInfo.CornerRadius
             )
             Background.Size = UDim2.fromScale(1, 0)
@@ -4922,6 +4945,10 @@ function Library:CreateWindow(WindowInfo)
 
         function Tab:AddRightGroupbox(Name)
             return Tab:AddGroupbox({ Side = 2, Name = Name })
+        end
+
+		function Tab:AddFullGroupbox(Name)
+            return Tab:AddGroupbox({ Side = 3, Name = Name })
         end
 
         function Tab:AddTabbox(Info)
@@ -5078,6 +5105,10 @@ function Library:CreateWindow(WindowInfo)
             return Tab:AddTabbox({ Side = 2, Name = Name })
         end
 
+		function Tab:AddFullTabbox(Name)
+            return Tab:AddTabbox({ Side = 3, Name = Name })
+        end
+
         function Tab:Hover(Hovering)
             if Library.ActiveTab == Tab then
                 return
@@ -5151,6 +5182,18 @@ function Library:CreateWindow(WindowInfo)
         Library.Tabs[Name] = Tab
 
         return Tab
+    end
+
+	function Window:RegisterAddon(Name: string, Icon)
+        local AddonTab = Window:AddTab(Name, Icon)
+        
+        AddonTab.IsAddon = true
+        AddonTab.AddonName = Name
+        
+        Library.Addons = Library.Addons or {}
+        Library.Addons[Name] = AddonTab
+
+        return AddonTab
     end
 
     function Window:AddKeyTab(Name)
