@@ -4319,7 +4319,7 @@ function Library:CreateWindow(WindowInfo)
     local Container
     do
         Library.KeybindFrame, Library.KeybindContainer =
-            Library:AddDraggableMenu('Keybinds')
+        Library:AddDraggableMenu('Keybinds')
         Library.KeybindFrame.AnchorPoint = Vector2.new(0, 0.5)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
@@ -4356,10 +4356,6 @@ function Library:CreateWindow(WindowInfo)
                     Size = UDim2.new(1, 0, 0, 1),
                 },
                 {
-                    Position = UDim2.fromScale(0.3, 0),
-                    Size = UDim2.new(0, 1, 1, -21),
-                },
-                {
                     AnchorPoint = Vector2.new(0, 1),
                     Position = UDim2.new(0, 0, 1, -20),
                     Size = UDim2.new(1, 0, 0, 1),
@@ -4386,48 +4382,16 @@ function Library:CreateWindow(WindowInfo)
             Size = UDim2.new(1, 0, 0, 48),
             Parent = MainFrame,
         })
-        Library:MakeDraggable(MainFrame, TopBar, false, true)
+
+		local DragBar = New('Frame', {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 48),
+            Parent = MainFrame,
+			ZIndex = 10,
+        })
+        Library:MakeDraggable(MainFrame, DragBar, false, true)
 
         --// Title
-        local TitleHolder = New('Frame', {
-            BackgroundTransparency = 1,
-            Size = UDim2.fromScale(0.3, 1),
-            Parent = TopBar,
-        })
-        New('UIListLayout', {
-            FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalAlignment = Enum.HorizontalAlignment.Center,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Padding = UDim.new(0, 6),
-            Parent = TitleHolder,
-        })
-
-        if WindowInfo.Icon then
-            New('ImageLabel', {
-                Image = tonumber(WindowInfo.Icon)
-                        and 'rbxassetid://' .. WindowInfo.Icon
-                    or WindowInfo.Icon,
-                Size = WindowInfo.IconSize,
-                Parent = TitleHolder,
-            })
-        end
-
-        local X = Library:GetTextBounds(
-            WindowInfo.Title,
-            Library.Scheme.Font,
-            20,
-            TitleHolder.AbsoluteSize.X
-                - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 6 or 0)
-                - 12
-        )
-        New('TextLabel', {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, X, 1, 0),
-            Text = WindowInfo.Title,
-            TextSize = 20,
-            Parent = TitleHolder,
-        })
-
         --// Bottom Bar \\--
         local BottomBar = New('Frame', {
             AnchorPoint = Vector2.new(0, 1),
@@ -4500,11 +4464,12 @@ function Library:CreateWindow(WindowInfo)
         Tabs = New('ScrollingFrame', {
             AutomaticCanvasSize = Enum.AutomaticSize.X,
             BackgroundColor3 = 'BackgroundColor',
+			BackgroundTransparency = 1,
             CanvasSize = UDim2.fromScale(0, 0),
-            Position = UDim2.new(0.3, 0, 0, 0),
+            Position = UDim2.new(0, 0, 0, 0),
             ScrollBarThickness = 0,
-            Size = UDim2.new(0.7, 0, 0, 50),
-            Parent = MainFrame,
+            Size = UDim2.new(1, 0, 0, 50),
+            Parent = TopBar,
         })
 
         New('UIListLayout', {
@@ -4518,6 +4483,7 @@ function Library:CreateWindow(WindowInfo)
             BackgroundColor3 = function()
                 return Library:GetBetterColor(Library.Scheme.BackgroundColor, 1)
             end,
+			BackgroundTransparency = 1,
             Name = 'Container',
             Position = UDim2.new(1, 0, 0, 49),
             Size = UDim2.new(1, -1, 1, -70),
@@ -4552,11 +4518,19 @@ function Library:CreateWindow(WindowInfo)
         local WarningStroke
 
         Icon = Library:GetIcon(Icon)
+
+		local TextX = Library:GetTextBounds(Name, Library.Scheme.Font, 16)
+        local TabWidth = TextX + 24
+
+        if Icon then
+            TabWidth = TabWidth + 30
+        end
+
         do
             TabButton = New('TextButton', {
                 BackgroundColor3 = 'MainColor',
                 BackgroundTransparency = 1,
-                Size = UDim2.new(0.3, 0, 0, 50),
+                Size = UDim2.new(0, TabWidth, 0, 50),
                 Text = '',
                 Parent = Tabs,
             })
@@ -4571,7 +4545,7 @@ function Library:CreateWindow(WindowInfo)
 
             TabLabel = New('TextLabel', {
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(30, 0),
+                Position = UDim2.fromOffset(Icon and 30 or 0, 0),
                 Size = UDim2.new(1, -30, 0, 25),
                 Text = Name,
                 TextSize = 16,
