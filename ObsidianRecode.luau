@@ -4852,7 +4852,7 @@ function Library:CreateWindow(WindowInfo)
 
         function Tab:AddGroupbox(Info)
             local Background = Library:MakeOutline(
-                Info.Side == 1 and TabLeft or (Info.Side == 2 and TabRight or TabFull)
+                Info.Side == 1 and TabLeft or (Info.Side == 2 and TabRight or TabFull),
                 WindowInfo.CornerRadius
             )
             Background.Size = UDim2.fromScale(1, 0)
